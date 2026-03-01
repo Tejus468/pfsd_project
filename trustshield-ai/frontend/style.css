@@ -1,0 +1,99 @@
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.container {
+    width: 500px;
+    text-align: center;
+}
+
+textarea {
+    width: 100%;
+    height: 120px;
+    margin-bottom: 15px;
+    padding: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
+
+.meter {
+    width: 100%;
+    height: 20px;
+    background: #1e293b;
+    border-radius: 10px;
+    margin: 15px 0;
+}
+
+#meter-bar {
+    height: 100%;
+    width: 0%;
+    background: red;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.highlight-box {
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    word-wrap: break-word;
+}
+
+.attack-type {
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 8px;
+    color: #ff9800;
+}
+
+.breakdown {
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+.why-flagged {
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.why-flagged ul {
+    padding-left: 18px;
+    margin: 4px 0;
+}
+
+.risk-meter {
+    margin-top: 8px;
+}
+
+.risk-label {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.risk-bar {
+    width: 100%;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.risk-fill {
+    height: 100%;
+    background: linear-gradient(90deg, green, orange, red);
+    transition: width 0.4s ease;
+}
