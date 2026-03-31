@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SmartMail AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            width: 320px;
+            padding: 15px;
+            background: #111827;
+            color: white;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        button:hover {
+            background: #1e40af;
+        }
+
+        .card {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: 0.3s ease;
+        }
+
+        .low { background: #065f46; }
+        .medium { background: #92400e; }
+        .high { background: #7c2d12; }
+        .critical { background: #7f1d1d; }
+
+        .badge {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .small {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .patterns {
+            margin-top: 5px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>🛡 SmartMail AI</h2>
+
+<button id="analyzeBtn">Analyze Email</button>
+
+<div id="result"></div>
+
+<script src="popup.js"></script>
+</body>
+</html>

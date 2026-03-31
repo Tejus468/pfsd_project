@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SmartMail AI - Phishing Detection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>📧 SmartMail AI</h1>
+    <h3>AI-Based Phishing Email Detection</h3>
+
+    <input type="text" id="subject" placeholder="Email Subject">
+    <textarea id="body" placeholder="Email Body"></textarea>
+
+    <button onclick="analyze()">Analyze Email</button>
+
+    <div id="result" class="hidden">
+        <h2>Classification: <span id="classification"></span></h2>
+        <h3>Confidence Score: <span id="confidence"></span></h3>
+
+        <p id="explanation"></p>
+
+        <p><strong>Analyzed Email:</strong></p>
+        <div id="highlighted-message" class="highlight-box"></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
