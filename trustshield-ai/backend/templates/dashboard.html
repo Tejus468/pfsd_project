@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TrustShield AI — Phishing Detection Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-base:    #0d0f14;
+    --bg-surface: #141720;
+    --bg-card:    #1a1e2b;
+    --bg-input:   #10121a;
+    --border:     rgba(255,255,255,0.07);
+    --border-md:  rgba(255,255,255,0.12);
+    --text-primary:   #e8eaf0;
+    --text-secondary: #7f8499;
+    --text-muted:     #4a4f66;
+    --accent-blue:  #3b82f6;
+    --accent-green: #22c55e;
+    --accent-red:   #ef4444;
+    --accent-amber: #f59e0b;
+    --accent-purple:#a78bfa;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Top bar ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    height: 56px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--text-primary);
+  }
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--accent-green);
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+  .pulse {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:0.3; }
+  }
+  .header-meta { font-size: 12px; color: var(--text-secondary); }
+  .welcome-user { font-size: 12px; color: var(--text-secondary); }
+  .logout-btn {
+    font-size: 12px;
+    color: #fff;
+    text-decoration: none;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 999px;
+    padding: 5px 12px;
+    transition: background 0.2s;
+  }
+  .logout-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+  }
+
+  /* ── Layout ── */
+  main { padding: 24px 28px; max-width: 1400px; margin: 0 auto; }
+
+  /* ── Section labels ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── Analyzer section ── */
+  .analyzer-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    margin-bottom: 28px;
+  }
+  .analyzer-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .analyzer-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .analyzer-header span {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-left: auto;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .email-input {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text-primary);
+    resize: vertical;
+    min-height: 90px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .email-input::placeholder { color: var(--text-muted); }
+  .email-input:focus { border-color: var(--accent-blue); }
+  .btn-analyze {
+    background: var(--accent-blue);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .btn-analyze:hover { background: #2563eb; }
+  .btn-analyze:active { transform: scale(0.98); }
+  .btn-analyze.loading { background: #1d4ed8; pointer-events: none; }
+  .btn-analyze svg { width: 14px; height: 14px; fill: #fff; }
+
+  /* result bar */
+  .result-bar {
+    margin-top: 14px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .result-bar.show { display: flex; }
+  .result-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .result-label { font-weight: 600; }
+  .result-confidence { margin-left: auto; color: var(--text-secondary); font-size: 12px; }
+  .result-indicators { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .tag-red   { background: rgba(239,68,68,0.12);   color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .tag-amber { background: rgba(245,158,11,0.12);  color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+  .tag-blue  { background: rgba(59,130,246,0.12);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+  .tag-green { background: rgba(34,197,94,0.12);   color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+
+  /* ── Dashboard grid ── */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.blue::before   { background: var(--accent-blue); }
+  .stat-card.red::before    { background: var(--accent-red); }
+  .stat-card.green::before  { background: var(--accent-green); }
+  .stat-card.purple::before { background: var(--accent-purple); }
+  .stat-icon {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .stat-icon svg { width: 16px; height: 16px; }
+  .stat-icon.blue   { background: rgba(59,130,246,0.12); }
+  .stat-icon.blue svg { fill: var(--accent-blue); }
+  .stat-icon.red    { background: rgba(239,68,68,0.12); }
+  .stat-icon.red svg { fill: var(--accent-red); }
+  .stat-icon.green  { background: rgba(34,197,94,0.12); }
+  .stat-icon.green svg { fill: var(--accent-green); }
+  .stat-icon.purple { background: rgba(167,139,250,0.12); }
+  .stat-icon.purple svg { fill: var(--accent-purple); }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .stat-delta {
+    font-size: 11px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .delta-up   { color: var(--accent-red); }
+  .delta-down { color: var(--accent-green); }
+
+  /* ── Bottom row ── */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 14px;
+  }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+  }
+  .panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title span { color: var(--text-secondary); font-size: 12px; font-weight: 400; }
+
+  /* ── Risk distribution ── */
+  .risk-rows { display: flex; flex-direction: column; gap: 12px; }
+  .risk-row { display: flex; flex-direction: column; gap: 5px; }
+  .risk-row-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .risk-row-header strong { color: var(--text-primary); font-weight: 500; }
+  .bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  /* ── Activity feed ── */
+  .feed { display: flex; flex-direction: column; gap: 1px; }
+  .feed-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .feed-body { flex: 1; min-width: 0; }
+  .feed-subject {
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+  }
+  .feed-meta { color: var(--text-muted); margin-top: 1px; }
+  .feed-badge {
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    font-weight: 600;
+    align-self: flex-start;
+    margin-top: 1px;
+  }
+
+  /* ── Model info ── */
+  .model-rows { display: flex; flex-direction: column; gap: 10px; }
+  .model-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .model-row-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .model-row-value { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .model-row-sub   { font-size: 11px; color: var(--text-secondary); }
+  .accuracy-bar {
+    margin-top: 14px;
+  }
+  .accuracy-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+  }
+  .accuracy-label strong { color: var(--text-primary); }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .dash-grid { grid-template-columns: repeat(2, 1fr); }
+    .bottom-grid { grid-template-columns: 1fr 1fr; }
+    .bottom-grid .panel:last-child { grid-column: 1 / -1; }
+  }
+  @media (max-width: 700px) {
+    main { padding: 16px; }
+    .dash-grid { grid-template-columns: 1fr 1fr; }
+    .bottom-grid { grid-template-columns: 1fr; }
+    .input-row { flex-direction: column; }
+    .btn-analyze { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     HEADER
+══════════════════════════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l6 2.67V11c0 3.9-2.6 7.52-6 8.73-3.4-1.21-6-4.83-6-8.73V7.67L12 5z"/></svg>
+    </div>
+    TrustShield AI
+  </div>
+  <div class="header-right">
+    <div class="status-badge">
+      <div class="pulse"></div>
+      System Active
+    </div>
+    <span class="welcome-user">Welcome, {{ session['user'] }}</span>
+    <div class="header-meta" id="currentTime">—</div>
+    <a href="/logout" class="logout-btn">Logout</a>
+  </div>
+</header>
+
+<!-- ══════════════════════════════
+     MAIN
+══════════════════════════════ -->
+<main>
+
+  <!-- ── SECTION 1: EMAIL ANALYZER ── -->
+  <div class="section-label">Email Analyzer</div>
+  <div class="analyzer-card">
+    <div class="analyzer-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--accent-blue)"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      <h2>Analyze Email</h2>
+      <span>Paste email content or headers below</span>
+    </div>
+
+    <div class="input-row">
+      <textarea
+        id="emailInput"
+        class="email-input"
+        placeholder="Paste the full email body, headers, or suspicious URL here...&#10;&#10;Example: From: support@paypa1-secure.com&#10;Subject: Urgent: Verify your account immediately&#10;Click here to verify: http://paypa1-verify.net/login"
+      ></textarea>
+      <button class="btn-analyze" id="analyzeBtn" onclick="analyzeEmail()">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        Analyze
+      </button>
+    </div>
+
+    <div class="result-bar" id="resultBar">
+      <div class="result-dot" id="resultDot"></div>
+      <div>
+        <div class="result-label" id="resultLabel">—</div>
+        <div class="result-indicators" id="resultIndicators"></div>
+      </div>
+      <div class="result-confidence" id="resultConfidence">—</div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: DASHBOARD ── -->
+  <div class="section-label">Dashboard Overview</div>
+
+  <!-- Stat cards -->
+  <div class="dash-grid">
+    <div class="stat-card blue">
+      <div class="stat-icon blue">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg>
+      </div>
+      <div class="stat-value" id="totalEmails">0</div>
+      <div class="stat-label">Total Emails Scanned</div>
+      <div class="stat-delta delta-up">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+        <span id="totalEmailsDelta">Live</span>
+      </div>
+    </div>
+
+    <div class="stat-card red">
+      <div class="stat-icon red">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      </div>
+      <div class="stat-value" id="phishingCount">0</div>
+      <div class="stat-label">Phishing Detected</div>
+      <div class="stat-delta delta-up">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+        <span id="phishingDelta">Live</span>
+      </div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon green">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </div>
+      <div class="stat-value" id="legitCount">0</div>
+      <div class="stat-label">Legitimate Emails</div>
+      <div class="stat-delta delta-down">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        <span id="legitDelta">Live</span>
+      </div>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-icon purple">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+      </div>
+      <div class="stat-value" id="detectionRate">93.6<span style="font-size:16px;font-weight:500">%</span></div>
+      <div class="stat-label">Detection Accuracy</div>
+      <div class="stat-delta delta-down">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+        <span id="accuracyDelta">+0.3% this week</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom panels -->
+  <div class="bottom-grid">
+
+    <!-- Risk Distribution -->
+    <div class="panel">
+      <div class="panel-title">Risk Level Distribution <span id="riskTotal">1,203 threats</span></div>
+      <div class="risk-rows" id="riskDistribution">
+        <div class="risk-row">
+          <div class="risk-row-header"><strong>Critical</strong><span id="riskCritical">312 (26%)</span></div>
+          <div class="bar-track"><div class="bar-fill" id="barCritical" style="width:26%;background:var(--accent-red)"></div></div>
+        </div>
+        <div class="risk-row">
+          <div class="risk-row-header"><strong>High</strong><span id="riskHigh">445 (37%)</span></div>
+          <div class="bar-track"><div class="bar-fill" id="barHigh" style="width:37%;background:#f97316"></div></div>
+        </div>
+        <div class="risk-row">
+          <div class="risk-row-header"><strong>Medium</strong><span id="riskMedium">289 (24%)</span></div>
+          <div class="bar-track"><div class="bar-fill" id="barMedium" style="width:24%;background:var(--accent-amber)"></div></div>
+        </div>
+        <div class="risk-row">
+          <div class="risk-row-header"><strong>Low</strong><span id="riskLow">157 (13%)</span></div>
+          <div class="bar-track"><div class="bar-fill" id="barLow" style="width:13%;background:var(--accent-blue)"></div></div>
+        </div>
+      </div>
+
+      <!-- Donut chart -->
+      <svg id="riskDonut" viewBox="0 0 120 120" style="width:120px;height:120px;display:block;margin:20px auto 0">
+        <!-- rendered by JS -->
+      </svg>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="panel">
+      <div class="panel-title">Recent Activity <span id="feedCount">Live</span></div>
+      <div class="feed" id="activityFeed">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Model Info -->
+    <div class="panel">
+      <div class="panel-title">Model Information</div>
+      <div class="model-rows">
+        <div class="model-row">
+          <div class="model-row-label">Active Model</div>
+          <div class="model-row-value" id="modelName">Loading...</div>
+          <div class="model-row-sub" id="modelType">Multi-feature classifier</div>
+        </div>
+        <div class="model-row">
+          <div class="model-row-label">Last Retrain</div>
+          <div class="model-row-value" id="lastRetrain">Loading...</div>
+          <div class="model-row-sub" id="retainSub">Awaiting metadata...</div>
+        </div>
+        <div class="model-row">
+          <div class="model-row-label">Best Model (eval)</div>
+          <div class="model-row-value" id="bestModel">Loading...</div>
+          <div class="model-row-sub" id="bestModelSub">Latest retrain result</div>
+        </div>
+        <div class="model-row">
+          <div class="model-row-label">Next Scheduled Retrain</div>
+          <div class="model-row-value" id="nextRetrain">Calculating...</div>
+          <div class="model-row-sub">Weekly cadence · auto-triggered</div>
+        </div>
+      </div>
+      <div class="accuracy-bar">
+        <div class="accuracy-label"><span>Model Accuracy</span><strong id="modelAccuracy">0.0%</strong></div>
+        <div class="bar-track"><div class="bar-fill" id="accuracyBar" style="width:0%;background:var(--accent-purple)"></div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+/* ══════════════════════════════
+   CLOCK
+══════════════════════════════ */
+function updateTime() {
+  const el = document.getElementById('currentTime');
+  const now = new Date();
+  el.textContent = now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+}
+updateTime();
+setInterval(updateTime, 30000);
+
+
+/* ══════════════════════════════
+   DASHBOARD STATS (REAL API)
+══════════════════════════════ */
+async function loadDashboardStats() {
+  try {
+    const res = await fetch('/dashboard');
+    if (!res.ok) throw new Error('Dashboard API error');
+
+    const data = await res.json();
+    document.getElementById('totalEmails').textContent = Number(data.total_scans || 0).toLocaleString();
+    document.getElementById('phishingCount').textContent = Number(data.phishing || 0).toLocaleString();
+    document.getElementById('legitCount').textContent = Number(data.legitimate || 0).toLocaleString();
+  } catch (err) {
+    alert('Backend not reachable');
+  }
+}
+loadDashboardStats();
+setInterval(loadDashboardStats, 10000);
+
+
+/* ══════════════════════════════
+   DASHBOARD DETAILS (REAL API)
+══════════════════════════════ */
+let recentActivityItems = [];
+
+function riskBucketFromScore(score) {
+  const value = Number(score || 0);
+  if (value > 75) return 'critical';
+  if (value > 50) return 'high';
+  if (value > 25) return 'medium';
+  return 'low';
+}
+
+function updateRiskUI(riskDistribution) {
+  const critical = Number(riskDistribution.critical || 0);
+  const high = Number(riskDistribution.high || 0);
+  const medium = Number(riskDistribution.medium || 0);
+  const low = Number(riskDistribution.low || 0);
+  const total = critical + high + medium + low;
+
+  const criticalPct = total ? (critical / total) * 100 : 0;
+  const highPct = total ? (high / total) * 100 : 0;
+  const mediumPct = total ? (medium / total) * 100 : 0;
+  const lowPct = total ? (low / total) * 100 : 0;
+
+  document.getElementById('riskTotal').textContent = `${total.toLocaleString()} threats`;
+  document.getElementById('riskCritical').textContent = `${critical.toLocaleString()} (${Math.round(criticalPct)}%)`;
+  document.getElementById('riskHigh').textContent = `${high.toLocaleString()} (${Math.round(highPct)}%)`;
+  document.getElementById('riskMedium').textContent = `${medium.toLocaleString()} (${Math.round(mediumPct)}%)`;
+  document.getElementById('riskLow').textContent = `${low.toLocaleString()} (${Math.round(lowPct)}%)`;
+
+  document.getElementById('barCritical').style.width = `${criticalPct}%`;
+  document.getElementById('barHigh').style.width = `${highPct}%`;
+  document.getElementById('barMedium').style.width = `${mediumPct}%`;
+  document.getElementById('barLow').style.width = `${lowPct}%`;
+
+  buildDonut([
+    { pct: criticalPct, color: '#ef4444' },
+    { pct: highPct, color: '#f97316' },
+    { pct: mediumPct, color: '#f59e0b' },
+    { pct: lowPct, color: '#3b82f6' },
+  ], total);
+}
+
+function toLocalDateTime(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return 'recently';
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return raw;
+
+  return parsed.toLocaleString('en-IN', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+}
+
+function updateModelInfoUI(modelInfo) {
+  const accuracyValue = Number(modelInfo.accuracy || 0);
+  const accuracyPct = Math.max(0, Math.min(100, accuracyValue * 100));
+  const lastRetrainTime = String(modelInfo.last_retrain_time || '').trim();
+  const intervalSeconds = Number(modelInfo.schedule_interval_seconds || 0);
+  const lastRetrainDate = lastRetrainTime ? new Date(lastRetrainTime) : null;
+
+  let nextRetrainValue = 'N/A';
+  if (lastRetrainDate && !Number.isNaN(lastRetrainDate.getTime()) && intervalSeconds > 0) {
+    nextRetrainValue = new Date(lastRetrainDate.getTime() + intervalSeconds * 1000).toLocaleString('en-IN', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  }
+
+  const lastRetrainDisplay = (lastRetrainDate && !Number.isNaN(lastRetrainDate.getTime()))
+    ? lastRetrainDate.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+    : (lastRetrainTime || 'N/A');
+
+  document.getElementById('modelName').textContent = modelInfo.model_name || 'N/A';
+  document.getElementById('lastRetrain').textContent = lastRetrainDisplay;
+  document.getElementById('bestModel').textContent = modelInfo.model_name || 'N/A';
+  document.getElementById('nextRetrain').textContent = nextRetrainValue;
+  document.getElementById('retainSub').textContent = lastRetrainTime
+    ? 'Synced from backend metadata'
+    : 'No retrain metadata yet';
+  document.getElementById('modelAccuracy').textContent = `${accuracyPct.toFixed(1)}%`;
+  document.getElementById('accuracyBar').style.width = `${accuracyPct}%`;
+
+  const topAccuracy = document.getElementById('detectionRate');
+  if (topAccuracy) {
+    topAccuracy.innerHTML = `${accuracyPct.toFixed(1)}<span style="font-size:16px;font-weight:500">%</span>`;
+  }
+}
+
+async function loadModelInfo() {
+  try {
+    const res = await fetch('/model/info');
+    if (!res.ok) throw new Error('Model info API error');
+
+    const data = await res.json();
+    updateModelInfoUI(data || {});
+  } catch (err) {
+    console.error('Model info load failed', err);
+  }
+}
+loadModelInfo();
+setInterval(loadModelInfo, 10000);
+
+async function loadDashboardDetails() {
+  try {
+    const res = await fetch('/dashboard/details');
+    if (!res.ok) throw new Error('Dashboard details API error');
+
+    const data = await res.json();
+    updateRiskUI(data.risk_distribution || {});
+    recentActivityItems = (data.recent_activity || []).map(item => ({
+      subject: String(item.text || '').slice(0, 60),
+      sender: 'ingested-email',
+      time: toLocalDateTime(item.time),
+      source: String(item.source || 'unknown').toLowerCase(),
+      verdict: String(item.label || '').toLowerCase() === 'phishing' ? 'phishing' : 'legitimate',
+      risk: riskBucketFromScore(item.risk_score),
+    }));
+    buildFeed();
+  } catch (err) {
+    alert('Backend not reachable');
+  }
+}
+loadDashboardDetails();
+setInterval(loadDashboardDetails, 10000);
+
+
+/* ══════════════════════════════
+   ACTIVITY FEED DATA
+══════════════════════════════ */
+function buildFeed() {
+  const feed = document.getElementById('activityFeed');
+  feed.innerHTML = '';
+  recentActivityItems.forEach(item => {
+    const isPhish = item.verdict === 'phishing';
+    const riskColors = { critical: '#ef4444', high: '#f97316', medium: '#f59e0b', low: '#3b82f6' };
+    const dotColor = isPhish ? (riskColors[item.risk] || '#ef4444') : '#22c55e';
+    const badgeCls = isPhish ? 'tag-red' : 'tag-green';
+    const badgeText = isPhish ? (item.risk ? item.risk.toUpperCase() : 'PHISH') : 'CLEAN';
+    const sourceTag = item.source === 'extension'
+      ? '[EXT]'
+      : item.source === 'dashboard'
+        ? '[WEB]'
+        : '[UNK]';
+
+    feed.innerHTML += `
+      <div class="feed-item">
+        <div class="feed-dot" style="background:${dotColor}"></div>
+        <div class="feed-body">
+          <div class="feed-subject">${escHtml(item.subject)}</div>
+          <div class="feed-meta">${sourceTag} ${escHtml(item.sender)} · ${item.time}</div>
+        </div>
+        <span class="feed-badge tag ${badgeCls}">${badgeText}</span>
+      </div>`;
+  });
+}
+buildFeed();
+
+function escHtml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+
+/* ══════════════════════════════
+   DONUT CHART (SVG)
+══════════════════════════════ */
+function buildDonut(data, totalThreats) {
+  const cx = 60, cy = 60, r = 44, sw = 16;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  let paths = '';
+  data.forEach(d => {
+    const dash = (d.pct / 100) * circ;
+    const gap = circ - dash;
+    paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+      stroke="${d.color}" stroke-width="${sw}"
+      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="${(-offset).toFixed(2)}"
+      transform="rotate(-90 ${cx} ${cy})" />`;
+    offset += dash;
+  });
+  document.getElementById('riskDonut').innerHTML =
+    paths +
+    `<text x="${cx}" y="${cy - 5}" text-anchor="middle" fill="#e8eaf0" font-size="13" font-weight="600">${Number(totalThreats || 0).toLocaleString()}</text>
+     <text x="${cx}" y="${cy + 12}" text-anchor="middle" fill="#7f8499" font-size="9">THREATS</text>`;
+}
+buildDonut([], 0);
+
+
+/* ══════════════════════════════
+   EMAIL ANALYZER (REAL API)
+══════════════════════════════ */
+async function analyzeEmail() {
+  const inputEl = document.getElementById('emailInput');
+  const emailText = inputEl.value.trim();
+  const bar = document.getElementById('resultBar');
+  const dot = document.getElementById('resultDot');
+  const lbl = document.getElementById('resultLabel');
+  const conf = document.getElementById('resultConfidence');
+  const tags = document.getElementById('resultIndicators');
+  const btn = document.getElementById('analyzeBtn');
+
+  if (!emailText) {
+    alert('Please paste some email content first.');
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.textContent = 'Analyzing…';
+  bar.classList.remove('show');
+
+  try {
+    const response = await fetch('/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: emailText, source: 'dashboard' })
+    });
+
+    if (!response.ok) throw new Error('Analyze API error');
+
+    const data = await response.json();
+    const classification = String(data.classification || '').trim();
+    const riskLevel = String(data.risk_level || '').trim();
+    const confidence = Number(data.confidence_score || 0);
+    const isPhish = classification.toLowerCase().includes('phishing') || classification.toLowerCase().includes('suspicious');
+
+    dot.style.background = isPhish ? '#ef4444' : '#22c55e';
+    lbl.style.color = isPhish ? '#f87171' : '#4ade80';
+    lbl.textContent = classification || (isPhish ? 'PHISHING' : 'LEGITIMATE');
+    conf.textContent = `Confidence: ${confidence.toFixed(2)}%`;
+
+    tags.innerHTML = '';
+    if (riskLevel) {
+      const riskTag = riskLevel.toLowerCase();
+      const riskTagClass = riskTag === 'critical' || riskTag === 'high'
+        ? 'tag-red'
+        : riskTag === 'medium'
+          ? 'tag-amber'
+          : 'tag-green';
+      tags.innerHTML += `<span class="tag ${riskTagClass}">Risk: ${escHtml(riskLevel)}</span>`;
+    }
+
+    bar.classList.add('show');
+
+    await loadDashboardStats();
+    await loadDashboardDetails();
+  } catch (error) {
+    alert('Backend not reachable');
+  } finally {
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:#fff"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg> Analyze`;
+  }
+}
+
+/* Allow Enter+Ctrl to submit */
+document.getElementById('emailInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.ctrlKey) analyzeEmail();
+});
+</script>
+</body>
+</html>

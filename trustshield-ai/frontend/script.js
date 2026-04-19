@@ -8,7 +8,7 @@ async function analyze() {
     }
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/analyze", {
+        const response = await fetch("/analyze", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -39,6 +39,10 @@ async function analyze() {
             data.highlighted_text;
 
         document.getElementById("result").classList.remove("hidden");
+
+        setTimeout(() => {
+            window.location.href = "/frontend/dashboard.html";
+        }, 1200);
 
     } catch (error) {
         alert("Backend not running. Please start server.");

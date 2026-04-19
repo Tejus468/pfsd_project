@@ -27,11 +27,15 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             }
 
             try {
+                const fullText = response?.text || `${response?.subject || ""}\n\n${response?.body || ""}`;
                 // Call backend API
                 const apiResponse = await fetch("http://127.0.0.1:8000/analyze", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(response)
+                    body: JSON.stringify({
+                        text: fullText,
+                        source: "extension"
+                    })
                 });
 
                 if (!apiResponse.ok) {
