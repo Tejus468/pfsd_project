@@ -1,0 +1,14 @@
+# Environment variables (SECRETS)
+.env
+backend/.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+
+# Node (if any frontend)
+node_modules/
